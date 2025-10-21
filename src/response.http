@@ -1,0 +1,143 @@
+# REST Client tests for API + middleware
+@baseUrl = http://localhost:5000
+# Replace with a valid token from your app settings
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHVzZXIiLCJzdWIiOiIxIiwiZXhwIjoxNzYxMDYzMTU0fQ.fFQdO52lqiaBU43z50B9u40fwmZVjXH-2pH4SfGXwN4
+@invalidToken = invalid.token.value
+
+### Middleware: GET /ok — expect 200 OK
+GET {{baseUrl}}/ok
+Accept: text/plain
+
+###
+
+### Middleware: GET /throw — expect 500 ProblemDetails
+GET {{baseUrl}}/throw
+Accept: application/json
+
+###
+
+### Middleware: GET /secure without token — expect 401 ProblemDetails
+GET {{baseUrl}}/secure
+Accept: application/problem+json
+
+###
+
+### Middleware: GET /secure with invalid token — expect 401 ProblemDetails
+GET {{baseUrl}}/secure
+Authorization: Bearer {{invalidToken}}
+Accept: application/problem+json
+
+###
+
+### Middleware: GET /secure with valid token — expect 200 when token valid
+GET {{baseUrl}}/secure
+Authorization: Bearer {{token}}
+Accept: text/plain
+
+###
+
+### API: Get all users without token — expect 401
+GET {{baseUrl}}/api/users
+Accept: application/json
+
+###
+
+### API: Get all users with token — expect 200
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### API: Search users — expect 200 JSON (query parameter)
+GET {{baseUrl}}/api/users?query=Alice
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### API: Get user by ID — expect 200 or 404
+GET {{baseUrl}}/api/users/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### API: Create a new user — expect 201 Created (or 200)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "Charlie",
+  "lastName": "Brown",
+  "email": "charlie@example.com",
+  "password": "test123"
+}
+
+###
+
+### API: Create duplicate user — expect 4xx (conflict/validation)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "CharlieDuplicate",
+  "lastName": "Brown",
+  "email": "charlie@example.com",
+  "password": "test123"
+}
+
+###
+
+### API: Update user — expect 200 or 204
+PUT {{baseUrl}}/api/users/3
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "Charles",
+  "lastName": "Brown",
+  "email": "charles@example.com",
+  "password": "newPass123"
+}
+
+###
+
+### API: Update user — expect 4xx (conflict/validation)
+PUT {{baseUrl}}/api/users/3
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "CharlesDuplicate",
+  "lastName": "Brown",
+  "email": "charles@example.com",
+  "password": "newPass123"
+}
+
+###
+
+### API: Delete user — expect 204 or 200
+DELETE {{baseUrl}}/api/users/4
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### API: Invalid endpoint — expect 404
+GET {{baseUrl}}/api/nonexistent
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+
+
+
+###############################################################################################
+
+
+
+
+
